@@ -13,7 +13,68 @@ class MSQLConn:
         self.conn = self.mysql.connect()
 
     def __del__(self):
-        self.conn.close()
+        if self.conn is not None:
+            self.conn.close()
+
+    def have_room_with_title(self, title):
+        cursor = self.conn.cursor()
+        try:
+            query = "SELECT * FROM tbl_room WHERE room_title = %s"
+            cursor.execute(query, (title,))
+            return len(cursor.fetchall()) > 0
+        finally:
+            cursor.close()
+
+    def create_room(self, title):
+        cursor = self.conn.cursor()
+        try:
+            query = "INSERT INTO tbl_room (room_title) VALUES (%s)"
+            result = cursor.execute(query, (title,))
+            if result:
+                self.conn.commit()
+            return result
+        finally:
+            cursor.close()
+
+    def get_rooms(self):
+        result = []
+        cursor = self.conn.cursor()
+        try:
+            query = "SELECT * FROM tbl_room"
+            cursor.execute(query)
+            data = cursor.fetchall()
+        finally:
+            cursor.close()
+
+        for room in data:
+            cursor = self.conn.cursor()
+            try:
+                query = "SELECT * FROM tbl_user WHERE user_last_visited_room=%s"
+                cursor.execute(query, room[1])
+                users_in_room = cursor.fetchall()
+            finally:
+                cursor.close()
+
+            users = []
+            for user in users_in_room:
+                users.append(user[1])
+            room_dict = {
+                'Title': room[1],
+                'Users': ','.join(users)
+            }
+            result.append(room_dict)
+        return result
+
+    def join_room(self, user_id, room_name):
+        cursor = self.conn.cursor()
+        try:
+            query = "UPDATE tbl_user SET user_last_visited_room = %s WHERE user_id = %s"
+            result = cursor.execute(query, (room_name, user_id))
+            if result:
+                self.conn.commit()
+            return result
+        finally:
+            cursor.close()
 
     def have_user_with_email(self, email):
         cursor = self.conn.cursor()
@@ -51,6 +112,6 @@ class MSQLConn:
             cursor.execute(query, (login,))
             tmp_user = cursor.fetchone()
             if len(tmp_user) > 0:
-                return SimpleUser(tmp_user[1], tmp_user[2], tmp_user[3])
+                return SimpleUser(tmp_user[0], tmp_user[1], tmp_user[2], tmp_user[3])
         finally:
             cursor.close()

@@ -2,7 +2,8 @@ from werkzeug.security import generate_password_hash
 
 
 class SimpleUser:
-    def __init__(self, name='', login='', passwd=''):
+    def __init__(self, us_id=0, name='', login='', passwd=''):
+        self.us_id = us_id
         self.name = name
         self.login = login
         self.password = passwd
