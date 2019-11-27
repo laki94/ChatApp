@@ -47,23 +47,14 @@ class MSQLConn:
             cursor.close()
 
         for room in data:
-            cursor = self.conn.cursor()
-            try:
-                query = "SELECT * FROM tbl_user WHERE user_last_visited_room=%s"
-                cursor.execute(query, room[1])
-                users_in_room = cursor.fetchall()
-            finally:
-                cursor.close()
-
-            users = []
-            for user in users_in_room:
-                users.append(user[1])
             room_dict = {
                 'Title': room[1],
-                'Users': ','.join(users)
             }
             result.append(room_dict)
         return result
+
+    def clear_joined_room(self, user_id):
+        self.join_room(user_id, '')
 
     def join_room(self, user_id, room_name):
         cursor = self.conn.cursor()
