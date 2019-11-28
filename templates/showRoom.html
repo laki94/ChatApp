@@ -9,7 +9,7 @@
     {% if session['logged_in'] %}
         <div class="container">
             <div class="header">
-            <h3 class="text-muted">ChatApp</h3>
+            <h3 class="text-muted">ChatApp, {{ session['user_name'] }}</h3>
             <nav class="tabs">
               <ul class="nav nav-pills">
                 <li role="presentation" class="nav-item"><a class="nav-link active" href=""> {{session['room']}} </a></li>

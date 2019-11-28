@@ -1,0 +1,18 @@
+DROP DATABASE IF EXISTS ChatDB;
+
+CREATE DATABASE ChatDB;
+
+USE ChatDB;
+
+CREATE TABLE `users` (
+  `id` BIGINT UNIQUE AUTO_INCREMENT,
+  `login` VARCHAR(45) NULL,
+  `name` VARCHAR(45) NULL,
+  `password` VARCHAR(255) NULL,
+  PRIMARY KEY (`id`));
+  
+CREATE TABLE `rooms` (
+  `id` BIGINT UNIQUE AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT '',
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8mb4;

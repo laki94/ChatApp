@@ -163,6 +163,7 @@ def do_login():
             session['logged_in'] = True
             session['user'] = tmp_user.us_id
             session['user_name'] = tmp_user.name
+            flash('Zalogowano jako ' + tmp_user.name, 'success')
             return redirect(url_for('home'))
         else:
             flash('Błędny adres e-mail lub hasło', 'warning')
