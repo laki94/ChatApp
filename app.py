@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash
 from SQLConn import MSQLConn
 from User import SimpleUser
 from flask_socketio import SocketIO, join_room, leave_room
+import sys
 
 app = Flask(__name__)
 app.secret_key = 'secretkey'
@@ -17,37 +18,33 @@ socketio = SocketIO(app)
 @app.route("/")
 def main():
     if session.get('user'):
-        return redirect('/userHome')
+        return redirect(url_for('home'))
     else:
         return render_template('index.html')
 
 
 @app.route('/showSignUp')
-def showSignUp():
+def show_sign_up():
     return render_template('signup.html')
 
 
 @app.route('/showSignIn')
-def showSignIn():
+def show_sign_in():
     if session.get('user'):
-        return redirect('/userHome')
+        return redirect(url_for('home'))
     else:
         return render_template('signin.html')
 
 
 @app.route('/getRooms')
-def getRooms():
+def get_rooms():
     return json.dumps(mysql.get_rooms())
 
 
 @app.route('/Room/<room_name>')
-def Room(room_name):
+def room(room_name):
     session['room'] = room_name
     return render_template('showroom.html')
-
-
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
 
 
 @socketio.on('disconnect')
@@ -56,7 +53,7 @@ def on_disconnect():
         'message': 'rozłączył/a się!',
         'user_name': session['user_name']
     }
-    socketio.emit('my response', json_msg, callback=messageReceived(), room=session['room'])
+    socketio.emit('my response', json_msg, room=session['room'])
 
 
 @socketio.on('join')
@@ -67,8 +64,8 @@ def on_join(data):
         'message': 'dołączył/a do pokoju!',
         'user_name': session['user_name']
     }
-    mysql.join_room(session['user'], session['room'])
-    socketio.emit('my response', json_msg, callback=messageReceived(), room=session['room'])
+    # mysql.join_room(session['user'], session['room'])
+    socketio.emit('my response', json_msg, room=session['room'])
 
 
 @socketio.on('leave')
@@ -78,26 +75,26 @@ def on_leave(data):
         'message': 'opuścił/a pokój!',
         'user_name': session['user_name']
     }
-    socketio.emit('my response', json_msg, callback=messageReceived(), room=session['room'])
+    socketio.emit('my response', json_msg, room=session['room'])
     session['room'] = ''
-    mysql.clear_joined_room(session['user'])
+    # mysql.clear_joined_room(session['user'])
 
 
 @socketio.on('my event')
-def handle_my_custom_event(json, methods=['GET', 'POST']):
-    json['user_name'] = session['user_name']
-    print('received my event: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived, room=session['room'])
+def handle_my_custom_event(json_obj, methods=['GET', 'POST']):
+    json_obj['user_name'] = session['user_name']
+    print('received my event: ' + str(json_obj))
+    socketio.emit('my response', json_obj, room=session['room'])
 
 
-@app.route('/userHome/<room_name>')
-def joinRoom(room_name):
-    return redirect(url_for('Room', room_name=room_name))
+@app.route('/Home/<room_name>')
+def show_spec_room(room_name):
+    return redirect(url_for('room', room_name=room_name))
 
 
-@app.route('/signUp',methods=['POST', 'GET'])
-def signUp():
-    tmp_user = SimpleUser(0, request.form['inputName'], request.form['inputEmail'], request.form['inputPassword'])
+@app.route('/signUp', methods=['POST', 'GET'])
+def sign_up():
+    tmp_user = SimpleUser(0, request.form['inputEmail'], request.form['inputName'], request.form['inputPassword'])
     if tmp_user.have_valid_data:
         if len(tmp_user.name) > 45:
             flash('Nazwa wyświetlana użytkownika nie może przekraczać 45 znaków!', 'warning')
@@ -111,22 +108,22 @@ def signUp():
             flash('Dodano nowego użytkownika', 'success')
         else:
             flash('Błąd wewnętrzny podczas dodawania użytkownika', 'error')
-        return redirect(url_for('showSignUp'))
+        return redirect(url_for('show_sign_up'))
 
 
 @app.route('/createRoom')
-def createRoom():
+def create_room():
     return render_template('createRoom.html')
 
 
-@app.route('/userHome')
-def userHome():
-    return render_template('userHome.html')
+@app.route('/Home')
+def home():
+    return render_template('home.html')
 
 
 @app.route('/logout')
 def logout():
-    mysql.clear_joined_room(session['user'])
+    # mysql.clear_joined_room(session['user'])
     session['logged_in'] = False
     session['user'] = 0
     session['user_name'] = ''
@@ -139,7 +136,7 @@ def logout():
 
 
 @app.route('/addRoom', methods=['POST'])
-def addRoom():
+def add_room():
     _title = request.form['inputTitle']
     if (_title is None) or (_title == ''):
         flash('Wprowadź poprawną nazwę pokoju', 'warning')
@@ -150,14 +147,14 @@ def addRoom():
             flash('Pokój o takiej nazwie już istnieje', 'warning')
         elif mysql.create_room(_title):
             flash('Stworzono nowy pokój', 'success')
-            return redirect(url_for('userHome'))
+            return redirect(url_for('home'))
         else:
             flash('Błąd wewnętrzny, nie można stworzyć pokoju', 'error')
-    return redirect(url_for('createRoom'))
+    return redirect(url_for('create_room'))
 
 
-@app.route('/validateLogin', methods=['POST'])
-def validateLogin():
+@app.route('/Login', methods=['POST'])
+def do_login():
     _username = request.form['inputEmail']
     _password = request.form['inputPassword']
     if mysql.have_user_with_email(_username):
@@ -166,13 +163,22 @@ def validateLogin():
             session['logged_in'] = True
             session['user'] = tmp_user.us_id
             session['user_name'] = tmp_user.name
-            return redirect(url_for('userHome'))
+            return redirect(url_for('home'))
         else:
-            flash('Błąd wewnętrzny, nie można zweryfikować poprawności danych', 'error')
+            flash('Błędny adres e-mail lub hasło', 'warning')
     else:
-        flash('Nie znaleziono użytkownika o podanym adresie email', 'warning')
-    return redirect(url_for('showSignIn'))
+        flash('Błędny adres e-mail lub hasło', 'warning')
+    return redirect(url_for('show_sign_in'))
 
 
 if __name__ == "__main__":
-   socketio.run(app, '192.168.0.197', 5000, debug=True)
+    def_host = '192.168.0.197'
+    def_port = 5000
+    def_debug_en = False
+    if len(sys.argv) > 1:
+        def_host = str(sys.argv[1])
+    if len(sys.argv) > 2:
+        def_port = int(sys.argv[2])
+    if len(sys.argv) > 3:
+        def_debug_en = bool(sys.argv[3])
+    socketio.run(app, def_host, def_port, debug=def_debug_en)

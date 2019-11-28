@@ -1,7 +1,5 @@
-
-
 class SimpleUser:
-    def __init__(self, us_id=0, name='', login='', passwd=''):
+    def __init__(self, us_id=0, login='', name='', passwd=''):
         self.us_id = us_id
         self.name = name
         self.login = login

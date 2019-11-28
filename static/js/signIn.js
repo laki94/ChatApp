@@ -1,6 +1,5 @@
 $(function(){
 	$('#btnSignIn').click(function(){
-
 		$.ajax({
 			url: '/signIn',
 			data: $('form').serialize(),

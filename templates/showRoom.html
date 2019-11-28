@@ -2,7 +2,6 @@
 {% block head %}
     <link href="../static/header_tabs.css" rel="stylesheet">
     <link href="../static/showRoom.css" rel="stylesheet">
-    <script src="../static/js/getRooms.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script src="../static/js/messaging.js"></script>
 {% endblock %}
@@ -14,7 +13,7 @@
             <nav class="tabs">
               <ul class="nav nav-pills">
                 <li role="presentation" class="nav-item"><a class="nav-link active" href=""> {{session['room']}} </a></li>
-                <li role="presentation" class="nav-item"><a class="nav-link" href="/userHome">Główna</a>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="/Home">Główna</a>
                 <li role="presentation" class="nav-item"><a class="nav-link" href="/createRoom">Stwórz pokój</a>
                 <li role="presentation" class="nav-item"><a class="nav-link" href="/logout">Wyloguj</a>
               </ul>
