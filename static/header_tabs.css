@@ -1,0 +1,11 @@
+.header {
+    display: flow-root;
+}
+
+.nav {
+    float: right;
+}
+
+.text-muted {
+    float: left;
+}

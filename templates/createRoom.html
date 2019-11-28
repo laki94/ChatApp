@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
+{% block head %}
+    <link href="../static/header_tabs.css" rel="stylesheet">
+{% endblock %}
 {% block container %}
     {% if session['logged_in'] %}
         <div class="container">
             <div class="header">
-            <nav>
-              <ul class="nav nav-pills float-right">
-                <li role="presentation" class="nav-item"><a class="nav-link" href="/userHome">Główna</a>
-                <li role="presentation" class="nav-item"><a class="nav-link" href="/logout">Wyloguj</a>
-              </ul>
-            </nav>
-            <h3 class="text-muted">ChatApp</h3>
-          </div>
+                <h3 class="text-muted">ChatApp</h3>
+                <nav class="tabs">
+                  <ul class="nav nav-pills float-right">
+                    <li role="presentation" class="nav-item"><a class="nav-link" href="/userHome">Główna</a>
+                    <li role="presentation" class="nav-item"><a class="nav-link" href="/logout">Wyloguj</a>
+                  </ul>
+                </nav>
+            </div>
             <section>
             <form class="form-horizontal" method="post" action="/addRoom">
                 <fieldset>
@@ -25,26 +28,14 @@
                             <input id="txtTitle" name="inputTitle" type="text" class="form-control input-md">
                         </div>
                     </div>
-
-                    <!-- Textarea -->
-<!--                    <div class="form-group">-->
-<!--                        <label class="col-md-4 control-label" for="txtPost">Post</label>-->
-<!--                        <div class="col-md-4">-->
-<!--                            <textarea class="form-control" id="txtPost" name="inputDescription"></textarea>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
-                    <!-- Button -->
                     <div class="form-group">
                         <label class="col-md-4 control-label" for="singlebutton"></label>
                         <div class="col-md-4">
                             <input id="singlebutton" name="singlebutton" class="btn btn-primary" type="submit" value="Stwórz" />
                         </div>
                     </div>
-
                 </fieldset>
             </form>
-
         </section>
         </div>
 

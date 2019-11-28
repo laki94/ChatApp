@@ -42,6 +42,7 @@ def getRooms():
 
 @app.route('/Room/<room_name>')
 def Room(room_name):
+    session['room'] = room_name
     return render_template('showroom.html')
 
 
@@ -49,9 +50,17 @@ def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
 
+@socketio.on('disconnect')
+def on_disconnect():
+    json_msg = {
+        'message': 'rozłączył/a się!',
+        'user_name': session['user_name']
+    }
+    socketio.emit('my response', json_msg, callback=messageReceived(), room=session['room'])
+
+
 @socketio.on('join')
 def on_join(data):
-    username = session['user_name']
     session['room'] = data['room_name']
     join_room(session['room'])
     json_msg = {
@@ -64,7 +73,6 @@ def on_join(data):
 
 @socketio.on('leave')
 def on_leave(data):
-    username = session['user_name']
     leave_room(session['room'])
     json_msg = {
         'message': 'opuścił/a pokój!',
@@ -89,16 +97,20 @@ def joinRoom(room_name):
 
 @app.route('/signUp',methods=['POST', 'GET'])
 def signUp():
-    tmp_user = SimpleUser(request.form['inputName'], request.form['inputEmail'], request.form['inputPassword'])
+    tmp_user = SimpleUser(0, request.form['inputName'], request.form['inputEmail'], request.form['inputPassword'])
     if tmp_user.have_valid_data:
-        if mysql.have_user_with_email(tmp_user.login):
-            flash('Użytkownik z podanym adresem email już istnieje')
+        if len(tmp_user.name) > 45:
+            flash('Nazwa wyświetlana użytkownika nie może przekraczać 45 znaków!', 'warning')
+        elif len(tmp_user.login) > 45:
+            flash('Adres e-mail nie może przekraczać 45 znaków!', 'warning')
+        elif mysql.have_user_with_email(tmp_user.login):
+            flash('Użytkownik z podanym adresem email już istnieje', 'warning')
         elif mysql.have_user_with_name(tmp_user.name):
-            flash('Użytkownik o podanej nazwie już istnieje')
+            flash('Użytkownik o podanej nazwie już istnieje', 'warning')
         elif mysql.add_new_user(tmp_user):
-            flash('Dodano nowego użytkownika')
+            flash('Dodano nowego użytkownika', 'success')
         else:
-            flash('Błąd wewnętrzny podczas dodawania użytkownika')
+            flash('Błąd wewnętrzny podczas dodawania użytkownika', 'error')
         return redirect(url_for('showSignUp'))
 
 
@@ -129,13 +141,18 @@ def logout():
 @app.route('/addRoom', methods=['POST'])
 def addRoom():
     _title = request.form['inputTitle']
-    if mysql.have_room_with_title(_title):
-        flash('Pokój o takiej nazwie już istnieje')
-    elif mysql.create_room(_title):
-        flash('Stworzono nowy pokój')
-        return redirect(url_for('userHome'))
+    if (_title is None) or (_title == ''):
+        flash('Wprowadź poprawną nazwę pokoju', 'warning')
+    elif len(_title) > 45:
+        flash('Nazwa pokoju nie może przekraczać 45 znaków', 'warning')
     else:
-        flash('Błąd wewnętrzny, nie można stworzyć pokoju')
+        if mysql.have_room_with_title(_title):
+            flash('Pokój o takiej nazwie już istnieje', 'warning')
+        elif mysql.create_room(_title):
+            flash('Stworzono nowy pokój', 'success')
+            return redirect(url_for('userHome'))
+        else:
+            flash('Błąd wewnętrzny, nie można stworzyć pokoju', 'error')
     return redirect(url_for('createRoom'))
 
 
@@ -151,12 +168,11 @@ def validateLogin():
             session['user_name'] = tmp_user.name
             return redirect(url_for('userHome'))
         else:
-            flash('Błąd wewnętrzny, nie można zweryfikować poprawności danych')
+            flash('Błąd wewnętrzny, nie można zweryfikować poprawności danych', 'error')
     else:
-        flash('Nie znaleziono użytkownika o podanym adresie email')
+        flash('Nie znaleziono użytkownika o podanym adresie email', 'warning')
     return redirect(url_for('showSignIn'))
 
 
 if __name__ == "__main__":
    socketio.run(app, '192.168.0.197', 5000, debug=True)
-    # app.run(host='192.168.0.197', debug=True)

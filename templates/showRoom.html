@@ -1,96 +1,32 @@
 {% extends 'base.html' %}
 {% block head %}
-<!--    <link href="../static/userHome.css" rel="stylesheet">-->
-    <style type="text/css">
-        .msgbox {
-            position: absolute;
-            bottom: 5px;
-        }
-        .nav {
-            float: right;
-        }
-        .list-group {
-            float: right;
-        }
-        .msgitems {
-            width: 500px;
-            overflow: hidden;
-            position: absolute;
-            bottom: 5px;
-        }
-        .msgbtn {
-            float: right;
-        }
-
-        .message {
-            width: 100%;
-        }
-
-        span {
-            display: block;
-            overflow: hidden;
-            padding-right: 10px;
-        }
-
-        .main-view {
-            height: 600px;
-        }
-
-        .message_holder {
-            height: 100%;
-            overflow: auto;
-        }
-    </style>
+    <link href="../static/header_tabs.css" rel="stylesheet">
+    <link href="../static/showRoom.css" rel="stylesheet">
     <script src="../static/js/getRooms.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="../static/js/messaging.js"></script>
 {% endblock %}
 {% block container %}
     {% if session['logged_in'] %}
         <div class="container">
             <div class="header">
-            <nav>
+            <h3 class="text-muted">ChatApp</h3>
+            <nav class="tabs">
               <ul class="nav nav-pills">
+                <li role="presentation" class="nav-item"><a class="nav-link active" href=""> {{session['room']}} </a></li>
                 <li role="presentation" class="nav-item"><a class="nav-link" href="/userHome">Główna</a>
                 <li role="presentation" class="nav-item"><a class="nav-link" href="/createRoom">Stwórz pokój</a>
                 <li role="presentation" class="nav-item"><a class="nav-link" href="/logout">Wyloguj</a>
               </ul>
             </nav>
-            <h3 class="text-muted">ChatApp</h3>
           </div>
           <div class="main-view">
-             <div class="list-group">
-                  <a class="list-group-item info">
-                    <h4 class="list-group-item-heading">Wish Title</h4>
-                  </a>
-            </div>
             <div class="message_holder"></div>
               <form class="msgitems" action="" method="post">
                   <input type="submit" class="msgbtn"/>
                   <span><input type="text" class="message"/></span>
               </form>
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script type="text/javascript">
-      var socket = io.connect('http://' + document.domain + ':' + location.port );
-      socket.on( 'connect', function() {
-        socket.emit( 'join', {
-            room_name: location.pathname
-        } )
-        var form = $( 'form' ).on( 'submit', function( e ) {
-          e.preventDefault()
-          let user_input = $( 'input.message' ).val()
-          if (user_input !== '')
-              socket.emit( 'my event', {
-                message : user_input
-              } )
-          $( 'input.message' ).val( '' ).focus()
-        } )
-      } )
-      socket.on( 'my response', function( msg ) {
-        console.log( msg )
-          $( 'div.message_holder' ).append( '<p><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</p>' )
-      })
-    </script>
           </div>
-<!--     TODO RESPONSYWNOSC STRONY NIE SZTYWNE WYSOKOSCI/SZEROKOSCI, TESTY NA TELEFONIE, POKAZYWANIE  -->
         </div>
     {% else %}
         Nie jesteś zalogowany!

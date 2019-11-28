@@ -1,0 +1,39 @@
+.msgbox {
+    position: absolute;
+    bottom: 5px;
+}
+
+.tabs {
+    float: right;
+}
+
+.list-group {
+    float: right;
+}
+
+.msgitems {
+   padding-bottom: 10px;
+}
+
+.msgbtn {
+    float: right;
+}
+
+.message {
+    width: 100%;
+}
+
+span {
+    display: block;
+    overflow: hidden;
+    padding-right: 10px;
+}
+
+.main-view {
+    height: 600px;
+}
+
+.message_holder {
+    height: 100%;
+    overflow: auto;
+}
