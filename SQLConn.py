@@ -1,5 +1,6 @@
 from flaskext.mysql import MySQL
 from User import SimpleUser
+from werkzeug.security import generate_password_hash
 
 
 class MSQLConn:
@@ -89,7 +90,7 @@ class MSQLConn:
         cursor = self.conn.cursor()
         try:
             query = "INSERT INTO tbl_user (user_name, user_username, user_password) VALUES (%s, %s, %s)"
-            result = cursor.execute(query, (user.name, user.login, user.hashed_pass))
+            result = cursor.execute(query, (user.name, user.login, generate_password_hash(user.password)))
             if result:
                 self.conn.commit()
             return result
