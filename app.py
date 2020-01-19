@@ -173,7 +173,7 @@ def do_login():
 
 
 if __name__ == "__main__":
-    def_host = '192.168.0.197'
+    def_host = '127.0.0.1'
     def_port = 5000
     def_debug_en = False
     if len(sys.argv) > 1:
